@@ -1,0 +1,99 @@
+{
+  "train_shape": [
+    1048575,
+    22
+  ],
+  "test_shape": [
+    745305,
+    22
+  ],
+  "n_features": 20,
+  "missing_train": 0,
+  "missing_test_features": 0,
+  "test_target_missing_by_design": 745305,
+  "target_stats": {
+    "count": 1048575.0,
+    "mean": 0.5044697375008941,
+    "std": 0.05103092422667017,
+    "min": 0.285,
+    "25%": 0.47,
+    "50%": 0.505,
+    "75%": 0.54,
+    "max": 0.725
+  },
+  "target_nunique": 83,
+  "target_skew": 0.048139827733234296,
+  "target_kurtosis": -0.03901945529336315,
+  "target_min": 0.285,
+  "target_max": 0.725,
+  "feature_value_min": 0.0,
+  "feature_value_max": 18.0,
+  "id_train_range": [
+    0,
+    1048574
+  ],
+  "id_test_range": [
+    1117957,
+    1863261
+  ],
+  "id_overlap": 0,
+  "feature_mean_min": 4.921994134897361,
+  "feature_mean_max": 4.955645518918533,
+  "feature_std_min": 2.051734803587008,
+  "feature_std_max": 2.0936381590233974,
+  "feature_corr_max_abs": 0.016746255677691023,
+  "feature_corr_mean_abs": 0.010431772588847657,
+  "univariate_r_min": 0.17782499217149053,
+  "univariate_r_max": 0.1901518081705025,
+  "univariate_r2_min": 0.03162172784079067,
+  "univariate_r2_max": 0.036157710150511585,
+  "ols": {
+    "intercept": -0.053369089926117774,
+    "coef_mean": 0.005646892170817559,
+    "coef_std": 1.96842602755305e-05,
+    "coef_min": 0.00560876164836799,
+    "coef_max": 0.005683727706367685,
+    "r2_train": 0.8450169821885827,
+    "rmse_train": 0.020089784744815663,
+    "resid_std": 0.020089794324387518,
+    "resid_min": -0.18705168715401993,
+    "resid_max": 0.21767961966607707,
+    "resid_within_0p035": 0.9170092744915719,
+    "resid_corr_max_abs": 9.044931032649482e-16
+  },
+  "equal_weight": {
+    "slope": 0.11293518473600216,
+    "intercept": -0.05335468265348672,
+    "r2": 0.8450041334997168,
+    "rmse": 0.020090617487807435,
+    "corr_with_target": 0.9192410638672049
+  },
+  "row_sum_structure": {
+    "mean": 98.78664854683737,
+    "std": 8.30737049501579,
+    "min": 64.0,
+    "max": 144.0,
+    "median": 98.0,
+    "corr_with_target": 0.919241063867207,
+    "r2_with_target": 0.8450041334997167,
+    "rmse_with_target": 0.020090617487807435,
+    "slope": 0.005646759236800108,
+    "intercept": -0.05335468265348672,
+    "mean_pairwise_corr": -0.010431772588847657,
+    "var_sum_over_sum_var": 0.8016706454764418
+  },
+  "rank_stability": {
+    "best_mean_rank": 4.47,
+    "worst_mean_rank": 16.875,
+    "rank_interval_width_mean": 15.70625
+  },
+  "train_test_ks_max": 0.002019322099801324,
+  "train_test_mean_diff_max": 0.0063837472037322485,
+  "figures": [
+    "fig_target_hist.png",
+    "fig_corr_heatmap.png",
+    "fig_feature_hist.png",
+    "fig_residual.png",
+    "fig_rowsum.png"
+  ]
+}

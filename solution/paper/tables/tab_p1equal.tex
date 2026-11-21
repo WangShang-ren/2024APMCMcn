@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{等权约束与无约束 OLS 的对比}
+\label{tab:p1equal}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+模型 & $R^2$ & RMSE & 参数个数 & 系数极差/均值 \\
+\midrule
+无约束 OLS（20 指标） & 0.84502 & 0.020090 & 21 & 1.33\% \\
+等权约束（行总和 $N$） & 0.84500 & 0.020091 & 2 & 0.00\% \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}\footnotesize 嵌套 F 检验 $F(19,1048554)=4.58$，$p=1.2\times10^{-10}$；$\Delta R^2=1.3\times10^{-5}$。随机分半的系数排序 Spearman $\rho=0.756$；Shapley $R^2$ 每项 0.0409–0.0434，极差仅 5.9\% 于均值。
+\end{table}

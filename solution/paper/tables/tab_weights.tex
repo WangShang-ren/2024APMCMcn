@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\caption{四种赋权方法的权重分布}
+\label{tab:weights}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+方法 & 最小 & 最大 & 最大/最小 & 标准差 \\
+\midrule
+等权 & 0.0500 & 0.0500 & 1.000 & 0.00000 \\
+熵权 & 0.0489 & 0.0511 & 1.045 & 0.00051 \\
+CRITIC & 0.0494 & 0.0504 & 1.021 & 0.00031 \\
+PCA1 & 0.0016 & 0.1776 & 112.576 & 0.04548 \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}\footnotesize 理想等权为 1/20=0.05；PCA 因数据近似各向同性而不适用。
+\end{table}

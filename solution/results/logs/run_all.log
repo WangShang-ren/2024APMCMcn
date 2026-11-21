@@ -1,0 +1,146 @@
+
+===== 数据总览与 EDA (eda.py) =====
+[start] 读取数据
+[done ] 读取数据: 1.8s
+EDA 完成，关键结论：
+  R²(线性) = 0.8450, 噪声 std = 0.0201
+  单变量 r ∈ [0.1778, 0.1902]
+  等权模型 R² = 0.8450
+
+===== 数据结构与生成机制 (structure.py) =====
+[start] 读取数据
+[done ] 读取数据: 1.2s
+[start] GMM on row sum
+[done ] GMM on row sum: 7.7s
+可交换性: {'feature_mean_min': 4.921994134897361, 'feature_mean_max': 4.955645518918533, 'feature_mean_range_over_mean': 0.006812941731739599, 'feature_std_min': 2.051734803587008, 'feature_std_max': 2.0936381590233974, 'feature_std_range_over_mean': 0.020197828692791124}
+相关结构: {'mean_pairwise_r': -0.010431772588847657, 'min_pairwise_r': -0.016746255677691023, 'max_pairwise_r': -0.005586697245633586, 'all_negative': True}
+GMM best k: 4 means: [82.49760951588091, 94.7330497307478, 103.46084600219164, 110.56346427925092]
+目标分解: {'signal_slope': 0.005647, 'signal_intercept': -0.053355, 'r2': 0.845004, 'rmse': 0.020091, 'signal_std': 0.04691, 'noise_std': 0.020091, 'y_std': 0.051031, 'noise_share_of_variance': 0.154996, 'noise_corr_with_N': 0.0}
+多峰性: {'pred_skew': 0.0917, 'pred_kurtosis': 0.84162, 'y_skew': 0.04814, 'y_kurtosis': -0.03902, 'pred_normal_ks_D': 0.07648, 'y_normal_ks_D': 0.02846}
+
+===== 问题 1：指标关联分析 (problem1.py) =====
+[start] 读取数据
+[done ] 读取数据: 1.2s
+[start] 互信息
+[done ] 互信息: 4.6s
+[start] 置换重要性
+[done ] 置换重要性: 4.1s
+[start] drop-one
+[done ] drop-one: 0.1s
+    指标  pearson_r  mutual_info  perm_rmse_increase  drop_one_r2
+基础设施恶化    0.19015      0.02503             0.00587      0.05161
+  季风强度    0.18926      0.01967             0.00575      0.05105
+  大坝质量    0.18768      0.01617             0.00601      0.05310
+  地形排水    0.18764      0.02295             0.00606      0.05347
+  河流管理    0.18720      0.01757             0.00601      0.05279
+    淤积    0.18691      0.01840             0.00590      0.05203
+  人口得分    0.18629      0.02585             0.00601      0.05315
+  气候变化    0.18531      0.01331             0.00591      0.05208
+    滑坡    0.18493      0.01962             0.00595      0.05263
+  森林砍伐    0.18442      0.01865             0.00589      0.05209
+  湿地损失    0.18347      0.02045             0.00588      0.05209
+  农业实践    0.18337      0.02469             0.00592      0.05204
+  无效防灾    0.18285      0.02042             0.00599      0.05258
+  政策因素    0.18225      0.02147             0.00610      0.05338
+    流域    0.18181      0.01867             0.00598      0.05297
+   城市化    0.18132      0.01799             0.00603      0.05312
+  规划不足    0.18080      0.02101             0.00595      0.05220
+  排水系统    0.17897      0.01593             0.00593      0.05221
+    侵蚀    0.17858      0.01344             0.00602      0.05299
+ 海岸脆弱性    0.17782      0.01571             0.00607      0.05376
+
+===== 问题 1 补充：等权检验与 Shapley 分解 (problem1_inference.py) =====
+[start] 读取数据
+[done ] 读取数据: 1.2s
+[start] 分半复现
+[done ] 分半复现: 0.8s
+[start] 独立性诊断
+[done ] 独立性诊断: 0.1s
+[start] Shapley R²（分块）
+[done ] Shapley R²（分块）: 1.5s
+[start] Shapley 自助法区间
+[done ] Shapley 自助法区间: 8.8s
+            模型       R²     RMSE           AIC           BIC  参数个数     系数最小     系数最大  系数极差/均值
+无约束 OLS（20 指标） 0.845017 0.020090 -8.194664e+06 -8.194414e+06    21 0.005609 0.005684 0.013276
+   等权约束（行总和 N） 0.845004 0.020091 -8.194615e+06 -8.194591e+06     2 0.005647 0.005647 0.000000
+
+    指标  shapley_r2  boot_lo  boot_hi  rank_lo  rank_hi  drop_one_r2
+  地形排水     0.04342  0.04274  0.04418      1.0      5.8      0.05347
+  大坝质量     0.04334  0.04209  0.04388      1.0     11.2      0.05310
+基础设施恶化     0.04316  0.04260  0.04361      1.0      6.0      0.05161
+  河流管理     0.04303  0.04214  0.04375      1.0     12.4      0.05279
+  人口得分     0.04281  0.04249  0.04376      1.0      8.4      0.05315
+    淤积     0.04267  0.04195  0.04298      5.6     13.0      0.05203
+  季风强度     0.04262  0.04206  0.04342      2.0     14.2      0.05105
+    滑坡     0.04239  0.04161  0.04277      5.6     15.8      0.05263
+  政策因素     0.04229  0.04147  0.04293      4.6     16.8      0.05338
+  气候变化     0.04229  0.04151  0.04294      5.6     17.4      0.05208
+  无效防灾     0.04220  0.04139  0.04271      5.4     18.0      0.05258
+   城市化     0.04209  0.04132  0.04281      5.8     18.0      0.05312
+    流域     0.04201  0.04131  0.04282      5.8     17.4      0.05297
+  森林砍伐     0.04198  0.04143  0.04271      5.8     18.0      0.05209
+  湿地损失     0.04185  0.04114  0.04266      7.2     18.8      0.05209
+  农业实践     0.04177  0.04123  0.04265      6.6     19.0      0.05204
+ 海岸脆弱性     0.04157  0.04096  0.04248      8.4     20.0      0.05376
+  规划不足     0.04140  0.04091  0.04227     11.2     20.0      0.05220
+    侵蚀     0.04120  0.04049  0.04183     14.6     20.0      0.05299
+  排水系统     0.04092  0.03985  0.04190     13.8     20.0      0.05221
+
+严格等权在统计上被拒绝，但效应量可忽略：F(19,1048554)=4.58，p=1.2e-10，ΔR²=1.28e-05，ΔRMSE=8.3e-07；系数相对偏差最大 0.67%，95% CI 上限 1.00%。随机分半后系数排序 Spearman ρ=0.756、前五名重合 4/5，说明存在 <1% 的可复现权重差异，但幅度不足以支撑差异化决策。Shapley R² 每项贡献 0.0409–0.0434，极差仅占均值 5.90%，排名区间平均宽度 9.9/20；且 Shapley 与 drop-one 排名的 Spearman 仅 0.06（与单变量 R² 为 0.88），说明重要性排序依赖度量选择。因此应把 20 个指标视为近似等权的综合致灾指数，最多指出相对略高/略低的指标，不能宣称存在关键指标。
+
+===== 问题 2：风险分级与 TOPSIS (problem2.py) =====
+[start] 读取数据
+[done ] 读取数据: 1.2s
+[start] KMeans 对照
+[done ] KMeans 对照: 5.1s
+[start] 赋权
+[done ] 赋权: 0.6s
+[start] TOPSIS
+[done ] TOPSIS: 1.0s
+[start] 灵敏度
+[done ] 灵敏度: 4.0s
+组目标均值: {'低风险': 0.44974522845009546, '中风险': 0.5046201944135829, '高风险': 0.5608688065681938}
+eta² 范围: [0.02362180155820197, 0.027086049594451437]
+KMeans ARI vs 三分位: 0.0001
+权重最大/最小比: {'等权': 1.0, '熵权': 1.045, 'CRITIC': 1.021, 'PCA1': 112.576}
+TOPSIS Spearman=0.8805, 分级一致率=0.7152
+灵敏度: {'dirichlet_relative_std_mean': 0.0962, 'spearman_mean': 0.9689, 'spearman_min': 0.9371, 'spearman_p2.5': 0.9468, 'spearman_p97.5': 0.9844, 'oat_spearman_min': 0.9919, 'oat_spearman_max': 0.9947}
+
+===== 问题 3：预测模型与 5 指标 (problem3.py) =====
+[start] 读取数据
+[done ] 读取数据: 1.3s
+[start] 随机森林
+[done ] 随机森林: 17.0s
+[start] HistGradientBoosting
+[done ] HistGradientBoosting: 7.1s
+[start] 置换重要性
+[done ] 置换重要性: 3.9s
+[start] 5 指标穷举
+[done ] 5 指标穷举: 1.3s
+        模型    rmse     mae       r2
+ OLS(20指标) 0.02011 0.01582  0.84445
+Ridge(α=1) 0.02011 0.01582  0.84445
+      等权指数 0.02011 0.01582  0.84444
+    HistGB 0.02116 0.01689  0.82769
+      随机森林 0.03533 0.02879  0.51992
+      均值基线 0.05098 0.04087 -0.00001
+
+最优 5 指标: 季风强度,地形排水,气候变化,大坝质量,基础设施恶化  RMSE=0.0460
+最差 5 指标: 城市化,侵蚀,排水系统,海岸脆弱性,流域  RMSE=0.0465
+边际 Top5: 基础设施恶化,季风强度,大坝质量,河流管理,人口得分  RMSE=0.0461
+5 指标 RMSE 中位数: 0.0463
+贪心前 5: ['季风强度', '基础设施恶化', '气候变化', '地形排水', '大坝质量']
+
+===== 问题 4：预测与分布检验 (problem4.py) =====
+[start] 读取数据与模型
+[done ] 读取数据与模型: 2.1s
+[start] 预测
+[done ] 预测: 0.0s
+/home/shaun/static/work/modeling/APMCM/solution/code/problem4.py:118: FutureWarning: As of SciPy 1.17, users must choose a p-value calculation method by providing the `method` parameter. `method='interpolate'` interpolates the p-value from pre-calculated tables; `method` may also be an instance of `MonteCarloMethod` to approximate the p-value via Monte Carlo simulation. When `method` is specified, the result object will include a `pvalue` attribute and not attributes `critical_value`, `significance_level`, or `fit_result`. Beginning in 1.19.0, these other attributes will no longer be available, and a p-value will always be computed according to one of the available `method` options.
+  ad = stats.anderson(pred, dist="norm")
+预测统计: {'n': 745305, 'mean': 0.504534, 'std': 0.046896, 'min': 0.302358, 'max': 0.760029, 'median': 0.500001, 'q01': 0.375823, 'q99': 0.629708, 'nunique_rounded_6': 46279}
+正态性: {'skew': 0.082367, 'kurtosis_excess': 0.84113, 'ks_D_vs_fitted_normal': 0.071414, 'ks_p_vs_fitted_normal': 0.0, 'anderson_stat': 3540.693303, 'anderson_critical_5pct': 0.752, 'jarque_bera_stat': 22813.678696, 'jarque_bera_p': 0.0, 'shapiro_W_5000': 0.984966, 'shapiro_p_5000': 0.0, 'ks_D_vs_train_target': 0.092602, 'ks_p_vs_train_target': 0.0, 'pred_modes': [0.364143134722013, 0.4205892448909768, 0.43584495034204807, 0.4678819317892978, 0.49381663105611906, 0.5365326063191187, 0.5670440172212612, 0.6021321397587253, 0.6265412684804393, 0.7363823477281526], 'train_target': {'skew': 0.048139827733234296, 'kurtosis_excess': -0.03901945529336315, 'ks_D_vs_fitted_normal': 0.02845508309888678, 'ks_p_vs_fitted_normal': 0.0, 'modes': [0.4764, 0.4881333333333333, 0.49693333333333334, 0.5101333333333333, 0.5350666666666667]}}
+提交文件: {'rows_written': 745305, 'rows_expected': 745305, 'ids_matched': True, 'header': 'id,洪水概率,,'}
+
+===== 生成论文表格 (make_tables.py) =====
+表格已写入 /home/shaun/static/work/modeling/APMCM/solution/paper/tables

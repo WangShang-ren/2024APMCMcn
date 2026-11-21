@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{TOPSIS 预警模型与灵敏度}
+\label{tab:topsis}
+\small
+\begin{tabular}{lr}
+\toprule
+指标 & 数值 \\
+\midrule
+Spearman（TOPSIS vs 目标） & 0.8805 \\
+Pearson（TOPSIS vs 目标） & 0.9012 \\
+线性校准后 R² & 0.8122 \\
+三级预警一致率 & 71.52\% \\
+权重扰动（$\pm10$\%）后 Spearman 均值 & 0.9689 \\
+单指标 $\pm20$\% 扰动后 Spearman 范围 & [0.9919,0.9947] \\
+KMeans 与三分位的 ARI & 0.0001 \\
+风险组 $\eta^2$ 范围 & [0.0236, 0.0271] \\
+\bottomrule
+\end{tabular}
+\end{table}

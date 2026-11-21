@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{仅用 5 个指标的精度损失（穷举 15504 个组合）}
+\label{tab:five}
+\small
+\begin{tabular}{lrrp{0.42\linewidth}}
+\toprule
+方案 & RMSE & $R^2$ & 指标组合 \\
+\midrule
+20 指标（OLS/等权） & 0.02011 & 0.8445 & 全部 20 个 \\
+最优 5 指标 & 0.04604 & 0.1844 & 季风强度,地形排水,气候变化,大坝质量,基础设施恶化 \\
+最差 5 指标 & 0.04651 & 0.1678 & 城市化,侵蚀,排水系统,海岸脆弱性,流域 \\
+边际相关 Top5 & 0.04613 & 0.1813 & 基础设施恶化,季风强度,大坝质量,河流管理,人口得分 \\
+全部 15504 组合中位数 & 0.04627 & — & — \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}\footnotesize 5 指标组合的 RMSE 全部落在 [0.0460, 0.0465]，说明任选 5 个指标的表现几乎相同。
+\end{table}

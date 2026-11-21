@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{问题 4 预测分布与观测目标的正态性对比}
+\label{tab:normality}
+\small
+\begin{tabular}{lrr}
+\toprule
+统计量 & 预测概率（信号） & 训练集观测值（信号+噪声） \\
+\midrule
+均值 & 0.5045 & 0.5045 \\
+标准差 & 0.0469 & 0.0510 \\
+偏度 & 0.0824 & 0.0481 \\
+峰度 & 0.8411 & -0.0390 \\
+KS $D$（vs 正态） & 0.0714 & 0.0285 \\
+JB 统计量 & 22813.7 & — \\
+Shapiro $W$（$n=5000$） & 0.9850 & — \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}\footnotesize 预测信号峰度约 0.84，明显偏离正态；观测值叠加噪声后峰度约 $-0.04$。
+\end{table}

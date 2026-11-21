@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{预测模型在 20\% 验证集上的表现}
+\label{tab:models}
+\small
+\begin{tabular}{lrrr}
+\toprule
+模型 & RMSE & MAE & $R^2$ \\
+\midrule
+OLS(20指标) & 0.02011 & 0.01582 & 0.8445 \\
+Ridge($\alpha=1$) & 0.02011 & 0.01582 & 0.8445 \\
+等权指数 & 0.02011 & 0.01582 & 0.8444 \\
+HistGB & 0.02116 & 0.01689 & 0.8277 \\
+随机森林 & 0.03533 & 0.02879 & 0.5199 \\
+均值基线 & 0.05098 & 0.04087 & -0.0000 \\
+\bottomrule
+\end{tabular}
+\end{table}

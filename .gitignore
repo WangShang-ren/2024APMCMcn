@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+
+# LaTeX 中间产物
+solution/paper/*.aux
+solution/paper/*.out
+solution/paper/*.toc
+solution/paper/*.synctex.gz
