@@ -96,8 +96,6 @@ def main() -> None:
 
     # ---------- 写回 submit.csv ----------
     info = write_submit(pred, test_ids, RESULTS / "submit.csv")
-    # 同时放一份到 solution 根目录，便于直接提交
-    write_submit(pred, test_ids, RESULTS.parent / "submit.csv")
 
     # ---------- 分布统计 ----------
     pred_stats = {

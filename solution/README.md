@@ -2,6 +2,8 @@
 
 本目录是 B 题的完整解题工程，包含数据、代码、结果、图表、论文与提交文件。
 
+> 模型整体框架（母模型、四问子模型、检验体系与边界）见 [模型整体设计.md](模型整体设计.md)；本文件侧重结果与复现。
+
 ## 1. 核心发现
 
 对 `train.csv` 的 104.9 万条数据做取证式分析后，发现它不是普通的“多因子真实数据”，而是一个高度结构化的合成数据：
@@ -53,7 +55,6 @@ solution/
     make_tables.py   # 生成 paper/tables/*.tex
     run_all.py       # 一键复现
     requirements.txt
-  data/              # train.csv / test.csv / submit.csv（原始附件）
   results/
     *.json           # 各问结果
     tables/*.csv     # 明细表
@@ -61,8 +62,9 @@ solution/
     submit.csv       # 填写后的提交文件
   figures/           # 论文图（PNG，200 dpi）
   paper/             # 官方 Word 模板版 + LaTeX 工作稿 + 表格
-  submit.csv         # 与 results/submit.csv 相同的提交文件
 ```
+
+> `train.csv` / `test.csv` / `submit.csv` 直接从 `../B题 洪水灾害的数据分析与预测/附件 B题 洪水灾害的数据分析与预测/` 读取，`solution/` 内不再保留副本。
 
 ## 4. 复现
 
@@ -81,7 +83,7 @@ cd solution/code
 
 ## 5. 提交文件
 
-`submit.csv` 与 `results/submit.csv` 已按原附件格式填写：
+`results/submit.csv` 已按原附件格式填写：
 
 - GBK 编码；
 - CRLF 换行；

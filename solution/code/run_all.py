@@ -78,7 +78,7 @@ def main() -> None:
             elif name == "problem4":
                 print(f"  预测均值={d['prediction_stats']['mean']:.4f}，"
                       f"峰度={d['normality']['kurtosis_excess']:.4f}")
-    print(f"\n提交文件：{ROOT / 'submit.csv'}")
+    print(f"\n提交文件：{ROOT / 'results' / 'submit.csv'}")
 
 
 if __name__ == "__main__":

@@ -8,3 +8,6 @@ solution/paper/*.aux
 solution/paper/*.out
 solution/paper/*.toc
 solution/paper/*.synctex.gz
+
+# 本地数据覆盖（默认直接读取 B 题附件）
+solution/data/

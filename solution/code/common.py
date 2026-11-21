@@ -9,14 +9,18 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+# 原始附件只保留 B 题目录下的一份；solution/data 若存在则优先使用（本地覆盖）
 DATA = ROOT / "data"
+if not DATA.is_dir():
+    DATA = (ROOT.parent / "B题 洪水灾害的数据分析与预测"
+            / "附件 B题 洪水灾害的数据分析与预测")
 RESULTS = ROOT / "results"
 TABLES = RESULTS / "tables"
 LOGS = RESULTS / "logs"
 FIGURES = ROOT / "figures"
 PAPER = ROOT / "paper"
 
-for _d in (DATA, RESULTS, TABLES, LOGS, FIGURES, PAPER):
+for _d in (RESULTS, TABLES, LOGS, FIGURES, PAPER):
     _d.mkdir(parents=True, exist_ok=True)
 
 # 附件列顺序（id + 20 个指标 + 目标）
