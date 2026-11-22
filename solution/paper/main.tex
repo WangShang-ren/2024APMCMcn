@@ -37,6 +37,8 @@
 
 问题 2 按目标三分位分级，风险组目标均值为 0.4497/0.5046/0.5609；三组的所有指标同步平移，\(\eta^2\) 仅 0.0236–0.0271，KMeans 与风险分级的 ARI 仅 \(7.3\times10^{-5}\)。熵权/CRITIC 都接近等权；TOPSIS 与目标的 Spearman 为 0.8805，三级预警一致率 71.5\%；权重约 \(\pm10\%\) 扰动下 Spearman 仍达 0.969。
 
+进一步，本文反演出生成模型（\(N\) 的 GMM、欠离散多项分配、Student-\(t\) 噪声），并用 DAG、偏相关与干预模拟说明：\(N\) 是唯一可观测驱动变量，给定 \(N\) 后指标与 \(y\) 条件独立（偏相关 \(|r|\le0.0041\)），保持 \(N\) 不变的再分配对 \(y\) 无影响。
+
 问题 3 比较六类模型：OLS、Ridge 与等权指数的验证集 RMSE 均为 0.02011，已达噪声下限；HistGB 为 0.02116，随机森林为 0.03533。穷举 15504 个五指标组合，RMSE 均落在 \([0.04604,0.04651]\)，最优五指标也仅 \(R^2=0.1844\)。
 
 问题 4 对 745305 条测试数据预测，均值 0.5045、标准差 0.0469，并按原格式写回 \texttt{submit.csv}。预测信号多峰（峰度 0.841，KS \(D=0.0714\)），观测值因噪声叠加才接近正态（峰度 \(-0.039\)，KS \(D=0.0285\)）。因此预测信号非正态，观测值仅近似正态。
@@ -136,7 +138,7 @@ $C_i$ & 第 $i$ 个事件的 TOPSIS 贴近度 \\
 \end{figure}
 
 \subsection{行总和本身是多峰的}
-行总和 $N$ 的均值为 98.79、标准差 8.31、范围 $[64,144]$。对 $N$ 拟合高斯混合模型，BIC 在 $k=4$ 时最小，四个成分的均值约为 82.5、94.7、103.5、110.6，权重约为 0.498、0.302、0.138、0.062。也就是说，$N$ 不是单峰正态，而是由多个“总量水平”混合而成。
+行总和 $N$ 的均值为 98.79、标准差 8.31、范围 $[64,144]$。对 $N$ 拟合高斯混合模型，$k=4$ 已能捕捉主要峰（成分均值约 82.5、94.7、103.5、110.6，权重约 0.498、0.302、0.138、0.062）；第 6 节的生成模型取 $k=6$ 以更灵活地复现多峰。也就是说，$N$ 不是单峰正态，而是由多个“总量水平”混合而成。
 
 \begin{figure}[H]
 \centering
@@ -162,6 +164,106 @@ $C_i$ & 第 $i$ 个事件的 TOPSIS 贴近度 \\
   \item 问题 3：最优预测器就是 $N$ 的线性函数，即等权指数；复杂模型不会超过噪声下限；
   \item 问题 4：预测信号 $0.00564676N-0.053355$ 继承 $N$ 的多峰性；观测值 $y$ 因叠加噪声才变平滑。
 \end{itemize}
+在进入四问之前，第 6、7 节先把“数据怎么生成、\(N\) 为什么是混杂变量”说清楚：第 6 节用生成式反演还原数据生成过程，第 7 节用 DAG、条件独立与干预模拟做因果敏感性分析；四问是同一机制的四个观测角度。
+
+\section{生成式逆向建模}
+
+\subsection{从“工作模型”到可估计的生成模型}
+第 \ref{sec:eda} 节只给出了条件均值层面的工作模型。为了把“数据是怎么长出来的”还原到可模拟、可检验的程度，本文把它写成显式的生成模型：
+\[
+\begin{aligned}
+N_i &\sim \mathrm{GMM}(k=6),\\
+(x_{i1},\dots,x_{i20})\mid N_i &\sim \mathrm{Underdispersed\ Multinomial}(N_i;p_1,\dots,p_{20};\phi),\\
+y_i &= aN_i+b+\varepsilon_i,\qquad \varepsilon_i\sim \mathrm{Student\text{-}}t(\nu,\mu_\varepsilon,\sigma_\varepsilon).
+\end{aligned}
+\]
+其中第二行表示“多项分配核心 + 均摊余量”：先按 \(p_j\) 随机分配 \(\phi N\) 个计数单元，再把剩余 \((1-\phi)N\) 个单元较均匀地摊到 20 个指标上。\(\phi<1\) 对应数据中“比标准多项分布更均匀”的欠离散现象。
+
+参数全部由极大似然/矩估计得到：
+\begin{itemize}
+  \item \(p_j=\sum_i x_{ij}/\sum_i N_i\)，估计结果为 \(p_j\in[0.0498,0.0502]\)，与 \(1/20\) 几乎完全一致；
+  \item 欠离散系数 \(\phi=\mathrm{Var}(x_j-Np_j)/\mathbb{E}[Np_j(1-p_j)]=0.8805\)；
+  \item \(N\) 的 GMM 在 \(k=6\) 后 BIC 改善趋缓（\(k=6\to8\) 的相对改善不足 0.15\%），取 \(k=6\)；
+  \item 噪声用 Student-\(t\) 拟合，\(\nu=8.22\)、\(\sigma_\varepsilon=0.0175\)；相比高斯，NLL 从 \(-2.4948\) 降到 \(-2.5033\)，说明残差有轻度重尾。
+\end{itemize}
+
+\input{tables/tab_generative}
+
+\subsection{模拟复现（后验预测检验）}
+用估计出的生成模型独立模拟 20 万条数据，并与真实数据做后验预测检验（PPC）。结果见表 \ref{tab:generative} 与图 \ref{fig:genppc}：行总和均值/标准差、目标均值/标准差、指标两两相关、控制 \(N\) 后相关、\(y\sim N\) 的 \(R^2\) 都能复现；唯一偏差是指标标准差略高（2.131 vs 2.075，约 \(+2.7\%\)），说明“均摊余量”的随机化仍带来少量额外方差。这个偏差不影响机制结论，但提示生成模型在方差层面还可以继续细化。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../figures/fig_generative_ppc.png}
+\caption{生成模型对行总和与目标分布的复现}
+\label{fig:genppc}
+\end{figure}
+
+\subsection{生成模型预测 vs OLS}
+由于 \(N_i=\sum_j x_{ij}\) 在预测时完全已知，生成模型的条件均值就是
+\[
+\mathbb{E}[y\mid x]=\mathbb{E}[y\mid N]=aN+b,
+\]
+与 OLS/等权指数\textbf{完全相同}。因此二者的点预测 RMSE 都是 0.02011——生成模型不会、也不应该提高点精度。生成模型的价值在于给出完整的预测分布，而不是只给一个点。
+
+表 \ref{tab:generativepred} 比较了三种噪声假设的预测分布。Student-\(t\) 的 NLL/CRPS 略优于高斯（约 0.3\%–0.5\%），95\% 覆盖率与高斯相当；经验残差分布的 CRPS 最好，但直接使用训练集分位数会导致验证集覆盖率略低（93.5\%），实际使用时应做分位数校准或共形预测。
+
+\input{tables/tab_generative_pred}
+
+
+
+\subsection{潜在机制异质性：一个不可部署的上界}
+残差诊断还发现一个更强的结构：若允许两个潜在的线性机制
+\[
+y_i=a_{R_i}N_i+b_{R_i}+\varepsilon_i,\qquad R_i\in\{1,2\},
+\]
+并用 \(y\) 的后验责任去拟合，则验证集 RMSE 可降到 0.0115（约为单机制的一半）。但这只是\textbf{oracle 上界}：在真实预测时 \(R_i\) 不可观测。若只用 \(N\) 做门控，验证集 RMSE 为 0.02017，反而略差于单机制 OLS；若用 20 个指标去预测 \(R_i\)，AUC 仅 0.535。也就是说，潜在机制既不能由 \(N\) 识别，也不能由指标识别，只能作为不可观测异质性。因此本文仍以单机制等权模型作为可部署预测器，把双机制结果作为“数据中还存在未解释结构”的诊断。
+
+\section{因果敏感性分析}
+
+\subsection{DAG 与可识别性}
+本文没有干预实验，不能做严格因果推断；但可以在明确 DAG 假设下做\textbf{因果敏感性分析}。生成模型对应的因果图是：
+\[
+N\longrightarrow x_j\ (j=1,\dots,20),\qquad N\longrightarrow y,\qquad R\longrightarrow y,
+\]
+其中 \(R\) 是潜在机制，且经验上 \(R\) 与 \(x\) 近似独立（AUC=0.535）。在这个 DAG 中，\(N\) 是 \(x_j\) 与 \(y\) 的\textbf{混杂变量}：\(x_j\) 对 \(y\) 的边际相关，来自它和 \(y\) 共享同一个 \(N\)；给定 \(N\) 后，\(x_j\) 与 \(y\) 应该条件独立。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth]{../figures/fig_causal_dag.png}
+\caption{因果假设：\(N\) 是混杂变量，指标没有直接指向 \(y\) 的边}
+\label{fig:causaldag}
+\end{figure}
+
+\subsection{条件独立检验}
+对每个指标计算边际相关与偏相关：
+\[
+r_j^{\text{marg}}=\mathrm{Corr}(x_j,y),\qquad
+r_j^{\text{partial}}=\mathrm{Corr}\big(x_j-\mathbb{E}[x_j|N],\ y-\mathbb{E}[y|N]\big).
+\]
+结果见表 \ref{tab:causalsummary}：边际相关全部在 \(0.178\)–\(0.190\)，但给定 \(N\) 后偏相关全部落在 \([-0.0041,0.0039]\)，偏 \(R^2\) 最大仅 \(0.0017\%\)。部分偏相关的 \(p\) 值因 \(n=10^6\) 而“显著”，但效应量比噪声低两个数量级，应看效应量而不是 \(p\) 值。
+
+\input{tables/tab_causal_summary}
+
+
+
+\subsection{干预模拟}
+在拟合好的生成模型上做“模型内干预”，结果见表 \ref{tab:intervention}：
+\begin{itemize}
+  \item 保持 \(N\) 不变、把 1 分从一个指标转移到另一个指标：\(\Delta y=0\)；
+  \item 给任意一个指标加 1 分（\(N\to N+1\)）：\(\Delta y=\beta=0.00565\)；
+  \item 20 个指标各加 1 分（\(N\to N+20\)）：\(\Delta y=20\beta=0.1129\)；
+  \item 潜在机制从 1 切到 2（同一 \(N=99\)）：\(\Delta y\approx0.028\)，但该机制不可观测、不可干预，只能作为敏感性上界。
+\end{itemize}
+因此，\textbf{唯一可操作的因果杠杆是行总和 \(N\)，而不是某个单项指标}。这与第 \ref{sec:eda} 节的“总量—等权”结构完全一致。
+
+\input{tables/tab_intervention}
+
+\subsection{效应异质性与边界}
+潜在机制使 \(N\to y\) 的斜率在 \([0.00438,0.00614]\) 之间变化，均值为 \(0.00565\)；这是“同一 \(N\) 下仍存在未观测异质性”的体现。由于 \(R\) 与 \(x\) 近似独立（AUC=0.535），没有证据表明某个指标能替代 \(N\) 或绕过 \(N\) 影响 \(y\)。因此本文的因果结论应表述为：
+\begin{quote}
+在“\(N\) 是混杂变量、指标无直接边”的 DAG 假设下，数据与“单项指标无直接因果效应”一致；可操作的只有总量 \(N\)。这不是干预实验的因果证明，而是对“相关性全部由 \(N\) 解释”这一机制的敏感性分析。
+\end{quote}
 
 \section{问题 1：指标关联分析}
 
@@ -178,24 +280,8 @@ $C_i$ & 第 $i$ 个事件的 TOPSIS 贴近度 \\
 \subsection{结果}
 20 个指标的单变量相关全部落在 $[0.1778,0.1902]$，对应单变量 $R^2$ 仅 3.16\%–3.62\%；Spearman 秩相关在 $[0.1703,0.1814]$。从数值上看，排名第一与排名最后的指标差距不到 0.013，实际可忽略。
 
-\input{tables/tab_importance}
 
-\begin{figure}[H]
-\centering
-\begin{subfigure}{0.48\textwidth}
-  \centering
-  \includegraphics[width=\textwidth]{../figures/fig_p1_corr_ci.png}
-  \caption{相关系数与 95\% 置信区间}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.48\textwidth}
-  \centering
-  \includegraphics[width=\textwidth]{../figures/fig_p1_rank_interval.png}
-  \caption{自助法排名区间}
-\end{subfigure}
-\caption{20 个指标的相关性几乎相同，排名只有方向性意义}
-\label{fig:p1}
-\end{figure}
+
 
 自助法结果非常直接：每个指标的 95\% 排名区间平均宽度为 15.7（满量程 20）。例如排名均值最靠前的“基础设施恶化”也只有 4.47，其 95\% 区间覆盖第 1–13 名；排名最后的“海岸脆弱性”区间覆盖第 6–20 名。也就是说，换一批样本，排名会大幅重排。
 
@@ -214,22 +300,7 @@ $C_i$ & 第 $i$ 个事件的 TOPSIS 贴近度 \\
 
 \input{tables/tab_p1equal}
 
-\begin{figure}[H]
-\centering
-\begin{subfigure}{0.48\textwidth}
-  \centering
-  \includegraphics[width=\textwidth]{../figures/fig_p1_coef_equal.png}
-  \caption{系数与等权斜率的相对偏差}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.48\textwidth}
-  \centering
-  \includegraphics[width=\textwidth]{../figures/fig_p1_shapley.png}
-  \caption{Shapley \(R^2\) 分解}
-\end{subfigure}
-\caption{等权约束检验与 Shapley \(R^2\) 分解}
-\label{fig:p1inference}
-\end{figure}
+
 
 结果有三层：
 \begin{enumerate}
@@ -238,7 +309,7 @@ $C_i$ & 第 $i$ 个事件的 TOPSIS 贴近度 \\
   \item \textbf{重要性度量不一致}：Shapley \(R^2\) 每项在 0.0409–0.0434 之间，极差仅占均值 5.9\%；它与留一 \(R^2\) 排名的 Spearman 仅 0.06，与单变量 \(R^2\) 的排序为 0.88。指标标准差从 2.052 到 2.094（相差 2.0\%），而 Shapley 贡献对 \(\beta_j^2\mathrm{Var}(x_j)\) 敏感，说明这点差异主要来自指标方差，而不是权重。
 \end{enumerate}
 
-因此，问题 1 的准确表述是“20 个指标近似等权、权重差异 $<1\%$”：既不是“完全等权”，也不是“存在关键指标”。表 \ref{tab:importance} 中的排序可以报告，但只能作为方向性参考。
+因此，问题 1 的准确表述是“20 个指标近似等权、权重差异 $<1\%$”：既不是“完全等权”，也不是“存在关键指标”。相关性排序可以报告，但只能作为方向性参考。
 
 \subsection{结论与预防建议}
 问题 1 的正确答案不是列出一个“关键指标清单”，而是：
@@ -333,12 +404,7 @@ C_i=\frac{d_i^-}{d_i^++d_i^-}.
 
 OLS、Ridge 与等权指数的验证集 RMSE 均为 0.02011，$R^2$ 约 0.8445，已经达到第 \ref{sec:eda} 节估计的噪声下限。HistGB 的 RMSE 为 0.02116，随机森林为 0.03533，均未超过线性模型；均值基线为 0.05098。这说明目标对指标是近似线性的，复杂模型只会增加方差。
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.75\textwidth]{../figures/fig_p3_model_compare.png}
-\caption{模型对比：线性/等权模型已达噪声下限}
-\label{fig:p3models}
-\end{figure}
+
 
 \begin{figure}[H]
 \centering
@@ -378,7 +444,7 @@ OLS、Ridge 与等权指数的验证集 RMSE 均为 0.02011，$R^2$ 约 0.8445�
 
 \subsection{结论}
 \begin{enumerate}
-  \item 最佳模型是 20 指标 OLS（等价于等权指数），验证集 RMSE 0.02011、$R^2$ 0.8445；
+  \item 在可部署的单机制模型内，最佳点预测器是 20 指标 OLS（等价于等权指数），验证集 RMSE 0.02011、$R^2$ 0.8445；第 6 节的生成模型也证实 $\mathbb{E}[y|x]=aN+b$，双机制 oracle 只能作为上界、不可部署；
   \item 仅用 5 个指标必然显著降精度，任选 5 个的表现几乎相同；
   \item 若业务上必须只用 5 个，应：选择稳定、可解释、采集成本低的 5 个指标；重新标定系数；明确报告精度损失（RMSE 约 0.046）；不要把 5 指标模型包装成“与 20 指标等效”；
   \item 更合理的低成本方案是“5 个分项 + 1 个综合指数”或“分层抽样监测”，而不是丢弃 15 个指标。
@@ -440,15 +506,17 @@ OLS、Ridge 与等权指数的验证集 RMSE 均为 0.02011，$R^2$ 约 0.8445�
 \begin{enumerate}
   \item \textbf{数据理解深}：不是直接套模型，而是先识别出等权—总量—多项分配结构，后续四问的结论互相印证；
   \item \textbf{证据链完整}：可交换性、负相关、$-1/19$、行总和多峰、目标线性、噪声下限、五指标穷举、预测多峰，形成闭环；
+  \item \textbf{机制反演}：不仅拟合预测，还反演出 \(N\) 的 GMM、欠离散多项分配与 Student-\(t\) 噪声，并用后验预测检验复现数据；
+  \item \textbf{因果敏感性}：用 DAG、偏相关与干预模拟说明 \(N\) 是混杂变量，避免把边际相关误读为“改某个指标就能降风险”；
   \item \textbf{结论诚实}：明确指出“没有关键指标”“5 指标必然降精度”“预测非正态”，不迎合常规叙事；
   \item \textbf{可复现}：所有数字由 \texttt{run\_all.py} 一键重跑，提交文件格式与原附件一致。
 \end{enumerate}
 
 \subsection{局限}
 \begin{enumerate}
-  \item 数据高度疑似合成，结论的生态效度有限；若换成真实洪水数据，指标间可能存在真实相关与非线性；
+  \item 数据呈现强生成结构；本文已反演其参数，但真实洪水数据可能包含更复杂的时空/非线性结构，生态效度仍需外部验证；
   \item 风险分级阈值（三分位）与预警等级阈值带有主观性，实际业务应结合成本—损失确定；
-  \item 本文只做预测与关联分析，不做因果推断；“提高排水得分能否降低洪水概率”不能由本文回答；
+  \item 因果部分是 DAG/生成模型假设下的敏感性分析，不是干预实验；潜在机制 \(R\) 不可观测，\(N\to y\) 斜率存在 \(0.0044\)–\(0.0061\) 的异质性，若存在未测混杂，结论需重新审视；
   \item 5 指标的选择只考虑了统计精度，未纳入采集成本、时效性与可操作性。
 \end{enumerate}
 
@@ -468,6 +536,8 @@ OLS、Ridge 与等权指数的验证集 RMSE 均为 0.02011，$R^2$ 约 0.8445�
 \bibitem{hwang} Hwang C L, Yoon K. Multiple Attribute Decision Making: Methods and Applications. Springer, 1981.
 \bibitem{diakoulaki} Diakoulaki D, Mavrotas G, Papayannakis L. Determining objective weights in multiple criteria problems: The CRITIC method. Computers \& Operations Research, 1995, 22(7): 763--770.
 \bibitem{shannon} Shannon C E. A Mathematical Theory of Communication. Bell System Technical Journal, 1948, 27: 379--423.
+\bibitem{pearl} Pearl J. Causality: Models, Reasoning, and Inference. 2nd ed. Cambridge University Press, 2009.
+\bibitem{bishop} Bishop C M. Pattern Recognition and Machine Learning. Springer, 2006.
 \end{thebibliography}
 
 \appendix
@@ -478,12 +548,14 @@ cd solution/code
 /home/shaun/miniforge3/bin/python run_all.py
 \end{verbatim}
 
-运行顺序：\texttt{eda.py} $\to$ \texttt{structure.py} $\to$ \texttt{problem1.py} $\to$ \texttt{problem2.py} $\to$ \texttt{problem3.py} $\to$ \texttt{problem4.py} $\to$ \texttt{make\_tables.py}。全部结果写入 \texttt{results/}，图写入 \texttt{figures/}，提交文件为 \texttt{solution/results/submit.csv}。
+运行顺序：\texttt{eda.py} $\to$ \texttt{structure.py} $\to$ \texttt{generative.py} $\to$ \texttt{causal.py} $\to$ \texttt{problem1.py} $\to$ \texttt{problem2.py} $\to$ \texttt{problem3.py} $\to$ \texttt{problem4.py} $\to$ \texttt{make\_tables.py}。全部结果写入 \texttt{results/}，图写入 \texttt{figures/}，提交文件为 \texttt{solution/results/submit.csv}。
 
 \section{主要文件}
 \begin{itemize}
   \item \texttt{results/eda\_summary.json}：数据概况与线性结构；
   \item \texttt{results/structure.json}：可交换性、负相关、行总和、目标分解；
+  \item \texttt{results/generative.json}：GMM、分配、噪声、PPC、预测对比、潜在机制；
+  \item \texttt{results/causal.json}：边际/偏相关、干预模拟、效应异质性；
   \item \texttt{results/problem1.json}：四种重要性度量与排名稳定性；
   \item \texttt{results/problem2.json}：风险分级、赋权、TOPSIS、灵敏度；
   \item \texttt{results/problem3.json}：模型对比、五指标穷举、学习曲线；

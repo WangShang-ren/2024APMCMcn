@@ -16,7 +16,9 @@
    \hat y = 0.00564676\,N - 0.05335,\quad R^2=0.845,\quad \text{噪声 std}=0.0201
    \]
    残差与 20 个指标全部无关（|r| < 1e−15）。
-5. 因此：
+5. **生成式反演**：$N\sim\mathrm{GMM}(k=6)$，$x|N\sim$ 欠离散多项分配（$\phi=0.8805$），$y=aN+b+$ Student-$t$ 噪声（$df=8.22$）。模拟 20 万条可复现行总和、目标分布与相关结构。
+6. **因果敏感性**：DAG 中 $N$ 是混杂变量；给定 $N$ 后偏相关 $|r|\le0.0041$、偏 $R^2\le0.0017\%$；保持 $N$ 不变的再分配对 $y$ 无影响，只有改变 $N$ 才有 $\Delta y=\beta$。
+7. 因此：
    - 问题 1 不存在实质意义上的“强指标/弱指标”：严格等权被统计拒绝（$p=1.2\times10^{-10}$），但 $\Delta R^2=1.3\times10^{-5}$、系数偏差 <1%，实践上等价；
    - 问题 2 的高/中/低风险组只是所有指标同步平移，不存在“组合型”画像；
    - 问题 3 线性/等权模型最优，复杂模型无增益；
@@ -38,6 +40,13 @@
 | KMeans 与风险三分位 ARI | 0.0001 |
 | 预测概率均值 / 标准差 | 0.5045 / 0.0469 |
 | 预测分布峰度 / KS D | 0.841 / 0.0714 |
+| 生成模型分配欠离散系数 φ | 0.8805 |
+| 生成模型噪声 Student-t df | 8.22 |
+| 生成模型 PPC 的 y 均值/标准差 | 0.5030 / 0.0511（真实 0.5045 / 0.0510） |
+| 因果偏相关范围 | [-0.0041, 0.0039] |
+| 因果偏 R² 最大 | 0.0017% |
+| 保持 N 不变的再分配效应 | Δy = 0 |
+| N→N+1 的效应 | Δy = 0.00565 |
 
 ## 3. 目录结构
 
@@ -47,6 +56,8 @@ solution/
     common.py        # 路径、读取、指标、绘图风格
     eda.py           # 数据总览与 EDA
     structure.py     # 数据结构与生成机制（核心证据）
+    generative.py    # 生成式反演：GMM、欠离散分配、t 噪声、PPC、预测对比
+    causal.py        # 因果敏感性：DAG、偏相关、干预模拟、效应异质性
     problem1.py      # 指标关联分析
     problem1_inference.py  # 等权约束检验、分半复现、Shapley R² 分解
     problem2.py      # 风险分级、赋权、TOPSIS、灵敏度
@@ -73,7 +84,7 @@ cd solution/code
 /home/shaun/miniforge3/bin/python run_all.py
 ```
 
-约 1–2 分钟（不含 LaTeX 编译）。依赖见 `requirements.txt`。
+约 4 分钟（不含 LaTeX/Word 编译）。依赖见 `requirements.txt`。
 
 单独运行某一问：
 
@@ -100,7 +111,7 @@ cd solution/code
   B  |                    （合并单元格）                            | apmcm241*****
 ```
 
-的表格，正文宋体小四、单倍行距、A4、页边距 2.5 cm，共 17 页（含参考文献与附录）。
+的表格，正文宋体小四、单倍行距、A4、页边距 2.5 cm，正文约 20 页，参考文献与附录另起页，共 21 页。
 
 - `paper/Bapmcm241*****.docx`：可直接用 Word 打开、修改；
 - `paper/Bapmcm241*****.pdf`：由该 docx 导出，可直接提交；
@@ -112,14 +123,16 @@ cd solution/code
 2. 把文件名 `Bapmcm241*****` 改成 `B` + 实际队号，例如 `Bapmcm24123456.pdf`；
 3. 在 Word 中确认封面表格、页码、图表编号后，重新导出 PDF。
 
-重新生成：
+重新生成（需要 `pandoc` 与 LibreOffice）：
 
 ```bash
 cd paper
 /home/shaun/miniforge3/bin/python build_official.py
 ```
 
-`paper/main.tex` / `paper/main.pdf` 是 LaTeX 工作稿（21 页，图表更全），不是官方模板格式；正式提交以 `Bapmcm241*****.docx/pdf` 为准。
+脚本会优先使用 `/tmp/opencode` 下的本地 pandoc/LibreOffice，找不到时回退到系统 `PATH` 中的 `pandoc`/`soffice`。
+
+`paper/main.tex` / `paper/main.pdf` 是 LaTeX 工作稿（26 页，图表更全），不是官方模板格式；正式提交以 `Bapmcm241*****.docx/pdf` 为准。
 
 ## 7. 说明与局限
 

@@ -19,6 +19,8 @@ LOG.parent.mkdir(parents=True, exist_ok=True)
 SCRIPTS = [
     ("eda.py", "数据总览与 EDA"),
     ("structure.py", "数据结构与生成机制"),
+    ("generative.py", "生成式逆向建模"),
+    ("causal.py", "因果敏感性分析"),
     ("problem1.py", "问题 1：指标关联分析"),
     ("problem1_inference.py", "问题 1 补充：等权检验与 Shapley 分解"),
     ("problem2.py", "问题 2：风险分级与 TOPSIS"),
@@ -52,8 +54,9 @@ def main() -> None:
     print(f"\n全部完成，总耗时 {time.time() - t_all:.1f}s")
     print(f"日志：{LOG}")
     print("\n关键结果：")
-    for name in ("eda_summary", "structure", "problem1", "problem1_inference",
-                 "problem2", "problem3", "problem4"):
+    for name in ("eda_summary", "structure", "generative", "causal",
+                 "problem1", "problem1_inference", "problem2", "problem3",
+                 "problem4"):
         p = ROOT / "results" / f"{name}.json"
         if p.exists():
             d = json.load(open(p, encoding="utf-8"))
@@ -63,6 +66,15 @@ def main() -> None:
             elif name == "structure":
                 print(f"  行总和 N={d['row_sum']['mean']:.2f}±{d['row_sum']['std']:.2f}，"
                       f"y~N 的 R²={d['target_decomposition']['r2']:.4f}")
+            elif name == "generative":
+                lr = d["latent_regime"]
+                print(f"  φ={d['allocation']['phi']:.4f}，"
+                      f"oracle RMSE={lr['oracle_rmse_valid']:.4f}，"
+                      f"可部署 RMSE={lr['deployable_rmse_valid']:.4f}，"
+                      f"AUC={lr['regime_auc_from_x']:.3f}")
+            elif name == "causal":
+                print(f"  偏相关范围={[round(v,4) for v in d['partial_r_range']]}，"
+                      f"偏R²max={d['partial_r2_max_pct']:.5f}%")
             elif name == "problem1_inference":
                 eq = d["equal_weight_test"]
                 sh = d["shapley"]

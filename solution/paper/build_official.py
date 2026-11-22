@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -26,8 +27,8 @@ from docx.shared import Cm, Pt, RGBColor
 ROOT = Path(__file__).resolve().parent
 SOLUTION = ROOT.parent
 TEMPLATE = Path(
-    "/home/shaun/static/work/modeling/APMCM/2024CN/"
-    "2024年第十四届APMCM亚太地区大学生数学建模竞赛_ver2/"
+    "/home/shaun/static/work/modeling/APMCM/"
+    "2024年第十四届APMCM亚太地区大学生数学建模竞赛/"
     "参赛纪律、论文提交方式、承诺书及论文模板/"
     "2024年第十四届APMCM亚太地区大学生数学建模竞赛（中文赛项）论文模板.docx"
 )
@@ -35,16 +36,58 @@ WORD_SRC = ROOT / "word_source.tex"
 RAW_DOCX = ROOT / "_official_raw.docx"
 OUT_DOCX = ROOT / "Bapmcm241*****.docx"
 OUT_PDF = ROOT / "Bapmcm241*****.pdf"
-PANDOC = Path("/tmp/opencode/pandoc-3.14/bin/pandoc")
-SOFFICE = Path("/tmp/opencode/squashfs-root/opt/libreoffice26.2/program/soffice")
+def _find_tool(local: str, name: str) -> str:
+    p = Path(local)
+    if p.exists():
+        return str(p)
+    found = shutil.which(name)
+    if found:
+        return found
+    raise FileNotFoundError(
+        f"未找到 {name}。请安装 pandoc / LibreOffice，或修改 build_official.py 中的路径。"
+    )
+
+
+PANDOC = Path(_find_tool("/tmp/opencode/pandoc-3.14/bin/pandoc", "pandoc"))
+SOFFICE = Path(_find_tool(
+    "/tmp/opencode/squashfs-root/opt/libreoffice26.2/program/soffice",
+    "soffice",
+))
 
 # 保留的图（按 label）
 KEEP_FIGS = {
     "fig:structcorr", "fig:structrowsum", "fig:p1", "fig:p1inference", "fig:p2profiles",
     "fig:p2weights", "fig:p2topsis", "fig:p3models", "fig:p3five",
-    "fig:p4hist",
+    "fig:p4hist", "fig:genppc", "fig:genpred", "fig:causaldag",
+    "fig:causalcorr",
 }
 
+
+
+def number_refs(body: str) -> str:
+    """把 \\ref{tab:...}/\\ref{fig:...} 替换为按出现顺序的静态编号（Word 用）。"""
+    labels = {}
+    for env, prefix in (("table", "tab"), ("figure", "fig")):
+        pos = 0
+        n = 0
+        endtag = f"\\end{{{env}}}"
+        while True:
+            a = body.find(f"\\begin{{{env}}}", pos)
+            if a < 0:
+                break
+            b = body.find(endtag, a)
+            if b < 0:
+                break
+            b += len(endtag)
+            block = body[a:b]
+            n += 1
+            m = re.search(rf"\\label{{({prefix}:[^}}]+)}}", block)
+            if m:
+                labels[m.group(1)] = n
+            pos = b
+    for lab, num in labels.items():
+        body = body.replace(f"\\ref{{{lab}}}", str(num))
+    return body
 
 def make_word_source() -> None:
     tex = (ROOT / "main.tex").read_text(encoding="utf-8")
@@ -102,6 +145,8 @@ def make_word_source() -> None:
     body = re.sub(r"\\input\{(tables/[^}]+)\}", read_table, body)
 
     # 8) 去掉 \label/\ref 的残留（pandoc 对 section 引用会解析，图引用未使用）
+    body = number_refs(body)
+
     src = r"""\documentclass{article}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}

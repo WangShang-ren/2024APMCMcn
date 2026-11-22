@@ -1,0 +1,24 @@
+\begin{table}[htbp]
+\centering
+\caption{生成模型的参数估计（反演结果）}
+\label{tab:generative}
+\small
+\begin{tabular}{llr}
+\toprule
+模块 & 参数 & 估计值 \\
+\midrule
+$N$ 分布 & GMM 成分数 $k$ & 6 \\
+$N$ 分布 & 成分均值范围 & [82.67, 117.75] \\
+$N$ 分布 & 成分标准差范围 & [1.78, 5.47] \\
+分配 & $p_j$ 范围 & [0.0498, 0.0502] \\
+分配 & 欠离散系数 $\phi$ & 0.8805 \\
+噪声 & 高斯 $\sigma$ & 0.0201 \\
+噪声 & Student-$t$ $df$ / scale & 8.22 / 0.0175 \\
+目标 & $a$ / $b$ & 0.005647 / -0.0534 \\
+目标 & $R^2$ / RMSE & 0.8450 / 0.0201 \\
+潜在机制 & oracle / 可部署 RMSE & 0.0115 / 0.0202 \\
+潜在机制 & 可由 $x$ 识别（AUC） & 0.535 \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}\footnotesize $N$ 的 GMM 在 $k=6$ 后 BIC 改善趋缓；$\phi<1$ 表示分配比多项分布更均匀。
+\end{table}

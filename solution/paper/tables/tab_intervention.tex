@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{干预模拟：只有改变 $N$ 才会改变 $y$}
+\label{tab:intervention}
+\small
+\begin{tabular}{p{0.28\linewidth}p{0.20\linewidth}rp{0.30\linewidth}}
+\toprule
+干预 & 操作 & $\Delta y$ & 解释 \\
+\midrule
+保持 N 不变，重新分配 20 个指标 & x\_j 之间转移 1 分 & 0.0000 & 给定 N，y 与分配无关 \\
+N 增加 1（随机给某个指标 +1） & N -> N+1 & 0.0056 & 总量效应 $\beta$ \\
+20 个指标各 +1 & N -> N+20 & 0.1129 & 总量效应 ×20 \\
+把 1 分从指标 j 转到指标 k & N 不变 & 0.0000 & 纯分配干预，无直接效应 \\
+潜在机制从 1 切到 2（同一 N） & R: 1->2 & 0.0281 & 不可观测、不可干预，仅作敏感性 \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}\footnotesize 潜在机制切换取 $N=99$；该机制不可观测、不可干预，只用于敏感性分析。
+\end{table}

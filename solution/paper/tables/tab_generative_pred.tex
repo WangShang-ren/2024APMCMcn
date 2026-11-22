@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+\centering
+\caption{生成模型与 OLS 的预测分布对比}
+\label{tab:generativepred}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+噪声模型 & NLL & CRPS & 95\% 覆盖率 & 区间宽度 \\
+\midrule
+高斯 & -2.4948 & 0.01123 & 94.71\% & 0.07865 \\
+Student-t & -2.5033 & 0.01118 & 93.97\% & 0.08043 \\
+经验残差 & — & 0.01107 & 93.52\% & 0.07429 \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}\footnotesize 点预测完全相同（RMSE=0.02011）；生成模型的差异只在预测分布。
+\end{table}

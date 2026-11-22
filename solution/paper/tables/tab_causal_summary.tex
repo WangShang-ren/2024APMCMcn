@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\caption{因果敏感性：边际相关与条件独立检验汇总}
+\label{tab:causalsummary}
+\small
+\begin{tabular}{lr}
+\toprule
+统计量 & 数值 \\
+\midrule
+边际 $r(x_j,y)$ 范围 & [0.1778, 0.1902] \\
+偏相关 $r(x_j,y|N)$ 范围 & [-0.0041, 0.0039] \\
+偏 $R^2$ 最大 & 0.00167\% \\
+控制 $N$ 后指标间平均相关 & -0.0481 \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}\footnotesize 偏相关为给定 $N$ 后的条件相关；偏 $R^2$ 为在 $y\sim N$ 基础上加入 $x_j$ 的增量。
+\end{table}

@@ -64,6 +64,8 @@ def main() -> None:
     p2 = json.load(open(RESULTS / "problem2.json", encoding="utf-8"))
     p3 = json.load(open(RESULTS / "problem3.json", encoding="utf-8"))
     p4 = json.load(open(RESULTS / "problem4.json", encoding="utf-8"))
+    gen = json.load(open(RESULTS / "generative.json", encoding="utf-8"))
+    causal = json.load(open(RESULTS / "causal.json", encoding="utf-8"))
 
     # 1. 数据总览
     ts = eda["target_stats"]
@@ -212,6 +214,86 @@ def main() -> None:
                 "tab:normality", "lrr",
                 ["统计量", "预测概率（信号）", "训练集观测值（信号+噪声）"], rows,
                 note="预测信号峰度约 0.84，明显偏离正态；观测值叠加噪声后峰度约 $-0.04$。")
+
+
+    # 9. 生成模型参数
+    gm = gen["gmm"]
+    al = gen["allocation"]
+    nz = gen["noise"]
+    tg = gen["target"]
+    lr = gen["latent_regime"]
+    rows = [
+        ["$N$ 分布", "GMM 成分数 $k$", f"{gm['k']}"],
+        ["$N$ 分布", "成分均值范围", f"[{min(gm['means']):.2f}, {max(gm['means']):.2f}]"],
+        ["$N$ 分布", "成分标准差范围", f"[{min(gm['stds']):.2f}, {max(gm['stds']):.2f}]"],
+        ["分配", "$p_j$ 范围", f"[{al['p_min']:.4f}, {al['p_max']:.4f}]"],
+        ["分配", "欠离散系数 $\\phi$", f"{al['phi']:.4f}"],
+        ["噪声", "高斯 $\\sigma$", f"{nz['gaussian']['std']:.4f}"],
+        ["噪声", "Student-$t$ $df$ / scale",
+         f"{nz['student_t']['df']:.2f} / {nz['student_t']['scale']:.4f}"],
+        ["目标", "$a$ / $b$", f"{tg['a']:.6f} / {tg['b']:.4f}"],
+        ["目标", "$R^2$ / RMSE", f"{tg['r2']:.4f} / {tg['rmse']:.4f}"],
+        ["潜在机制", "oracle / 可部署 RMSE",
+         f"{lr['oracle_rmse_valid']:.4f} / {lr['deployable_rmse_valid']:.4f}"],
+        ["潜在机制", "可由 $x$ 识别（AUC）", f"{lr['regime_auc_from_x']:.3f}"],
+    ]
+    write_table("tab_generative", "生成模型的参数估计（反演结果）",
+                "tab:generative", "llr",
+                ["模块", "参数", "估计值"], rows,
+                note="$N$ 的 GMM 在 $k=6$ 后 BIC 改善趋缓；$\\phi<1$ 表示分配比多项分布更均匀。")
+
+    # 10. 生成模型预测对比
+    rows = []
+    for r in gen["predictive"]:
+        rows.append([
+            r["noise"],
+            "—" if pd.isna(r["nll"]) else f"{r['nll']:.4f}",
+            f"{r['crps']:.5f}",
+            f"{r['coverage95']*100:.2f}%",
+            f"{r['width95']:.5f}",
+        ])
+    write_table("tab_generative_pred", "生成模型与 OLS 的预测分布对比",
+                "tab:generativepred", "lrrrr",
+                ["噪声模型", "NLL", "CRPS", "95\\% 覆盖率", "区间宽度"], rows,
+                note="点预测完全相同（RMSE=0.02011）；生成模型的差异只在预测分布。")
+
+    # 11. 因果：边际 vs 偏相关
+    ct = pd.read_csv(TABLES / "causal_corr.csv", encoding="utf-8-sig")
+    rows = []
+    for _, r in ct.iterrows():
+        rows.append([
+            r["指标"], f"{r['边际r']:.4f}",
+            f"{r['偏相关r_given_N']:.4f}", f"{r['偏R2']*100:.5f}%",
+        ])
+    write_table("tab_causal", "边际相关与给定 $N$ 后的偏相关",
+                "tab:causal", "lrrr",
+                ["指标", "边际 $r$", "偏相关 $r|N$", "偏 $R^2$"], rows,
+                note="偏相关全部落在 $[-0.0041,0.0039]$，偏 $R^2$ 最大仅 0.0017\\%。")
+
+    # 11b. 因果汇总（正文用）
+    rows = [
+        ["边际 $r(x_j,y)$ 范围",
+         f"[{causal['marginal_r_range'][0]:.4f}, {causal['marginal_r_range'][1]:.4f}]"],
+        ["偏相关 $r(x_j,y|N)$ 范围",
+         f"[{causal['partial_r_range'][0]:.4f}, {causal['partial_r_range'][1]:.4f}]"],
+        ["偏 $R^2$ 最大", f"{causal['partial_r2_max_pct']:.5f}%"],
+        ["控制 $N$ 后指标间平均相关",
+         f"{causal['within_N_bin_corr_mean']:.4f}"],
+    ]
+    write_table("tab_causal_summary", "因果敏感性：边际相关与条件独立检验汇总",
+                "tab:causalsummary", "lr",
+                ["统计量", "数值"], rows,
+                note="偏相关为给定 $N$ 后的条件相关；偏 $R^2$ 为在 $y\\sim N$ 基础上加入 $x_j$ 的增量。")
+
+    # 12. 干预模拟
+    it = pd.read_csv(TABLES / "causal_intervention.csv", encoding="utf-8-sig")
+    rows = []
+    for _, r in it.iterrows():
+        rows.append([r["干预"], r["操作"], f"{r['Δy']:.4f}", r["解释"]])
+    write_table("tab_intervention", "干预模拟：只有改变 $N$ 才会改变 $y$",
+                "tab:intervention", "p{0.28\\linewidth}p{0.20\\linewidth}rp{0.30\\linewidth}",
+                ["干预", "操作", "$\\Delta y$", "解释"], rows,
+                note="潜在机制切换取 $N=99$；该机制不可观测、不可干预，只用于敏感性分析。")
 
     print("表格已写入", OUT)
 
