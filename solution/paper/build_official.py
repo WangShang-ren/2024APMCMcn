@@ -48,9 +48,12 @@ def _find_tool(local: str, name: str) -> str:
     )
 
 
-PANDOC = Path(_find_tool("/tmp/opencode/pandoc-3.14/bin/pandoc", "pandoc"))
+_HOME = Path.home()
+PANDOC = Path(_find_tool(
+    str(_HOME / ".local/pandoc/pandoc-3.14/bin/pandoc"), "pandoc"
+))
 SOFFICE = Path(_find_tool(
-    "/tmp/opencode/squashfs-root/opt/libreoffice26.2/program/soffice",
+    str(_HOME / ".local/libreoffice/squashfs-root/opt/libreoffice26.2/program/soffice"),
     "soffice",
 ))
 
@@ -150,7 +153,7 @@ def make_word_source() -> None:
     src = r"""\documentclass{article}
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
-\title{基于“总量—等权”结构的洪水灾害数据分析与概率预测}
+\title{基于总量与等权结构的洪水灾害数据分析与概率预测}
 \author{}
 \date{}
 \begin{document}
@@ -186,6 +189,7 @@ def set_run_font(run, size=12, east="宋体", ascii_="Times New Roman", bold=Non
     rfonts.set(qn("w:eastAsia"), east)
     rfonts.set(qn("w:ascii"), ascii_)
     rfonts.set(qn("w:hAnsi"), ascii_)
+    rfonts.set(qn("w:hint"), "eastAsia")
 
 
 def style_paragraph(p, kind="body"):

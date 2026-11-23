@@ -111,7 +111,7 @@ cd solution/code
   B  |                    （合并单元格）                            | apmcm241*****
 ```
 
-的表格，正文宋体小四、单倍行距、A4、页边距 2.5 cm，正文约 20 页，参考文献与附录另起页，共 21 页。
+的表格，正文宋体小四、单倍行距、A4、页边距 2.5 cm，正文约 19 页，参考文献与附录另起页，共 20 页。
 
 - `paper/Bapmcm241*****.docx`：可直接用 Word 打开、修改；
 - `paper/Bapmcm241*****.pdf`：由该 docx 导出，可直接提交；
@@ -130,9 +130,9 @@ cd paper
 /home/shaun/miniforge3/bin/python build_official.py
 ```
 
-脚本会优先使用 `/tmp/opencode` 下的本地 pandoc/LibreOffice，找不到时回退到系统 `PATH` 中的 `pandoc`/`soffice`。
+脚本会优先使用 `~/.local` 下的本地 pandoc/LibreOffice，找不到时回退到系统 `PATH` 中的 `pandoc`/`soffice`。
 
-`paper/main.tex` / `paper/main.pdf` 是 LaTeX 工作稿（26 页，图表更全），不是官方模板格式；正式提交以 `Bapmcm241*****.docx/pdf` 为准。
+`paper/main.tex` / `paper/main.pdf` 是 LaTeX 工作稿（25 页，图表更全），不是官方模板格式；正式提交以 `Bapmcm241*****.docx/pdf` 为准。
 
 ## 7. 说明与局限
 
